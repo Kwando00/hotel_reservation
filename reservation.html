@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ตารางการจอง - โรงแรม มรภ.ชัยภูมิ</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+            color: #FFA500;
+        }
+        .navbar {
+            background-color: #FFA500;
+        }
+        .navbar-brand, .navbar-nav .nav-link {
+            color: #ffffff !important;
+        }
+        footer {
+            background-color: #FFA500;
+            color: white;
+            padding: 20px 0;
+        }
+        .available {
+            color: green;
+        }
+        .booked {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+
+     <!-- Navigation -->
+     <nav class="navbar navbar-expand-lg navbar-dark">
+        <a class="navbar-brand" href="#">โรงแรม มรภ.ชัยภูมิ</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="index.html">หน้าแรก</a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="reserve.html">จองห้องพัก</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="reservation.html">ตารางการจอง</a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="monthly_usage.html">บันทึกการเข้าใช้บริการรายเดือน</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container my-4">
+        <h2 class="text-center">ตารางการจองห้องพัก</h2>
+
+        <h3 class="mt-4">ข้อมูลห้องพักทั้งหมด</h3>
+        <table class="table table-striped" id="room-status-table">
+            <thead>
+                <tr>
+                    <th>ประเภทห้อง</th>
+                    <th>จำนวนห้องทั้งหมด</th>
+                    <th>จำนวนห้องที่ว่าง</th>
+                    <th>สถานะ</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>ห้องพัก Standard</td>
+                    <td>45</td>
+                    <td id="standard-available">45</td>
+                    <td id="standard-status"></td>
+                </tr>
+                <tr>
+                    <td>ห้องพัก Deluxe</td>
+                    <td>11</td>
+                    <td id="deluxe-available">11</td>
+                    <td id="deluxe-status"></td>
+                </tr>
+                <tr>
+                    <td>ห้องพัก Suite</td>
+                    <td>5</td>
+                    <td id="suite-available">5</td>
+                    <td id="suite-status"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="mt-4">รายการจองห้องพัก</h3>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ชื่อผู้จอง</th>
+                    <th>เบอร์โทร</th>
+                    <th>ประเภทห้อง</th>
+                    <th>เช็คอิน</th>
+                    <th>เช็คเอาท์</th>
+                </tr>
+            </thead>
+            <tbody id="booking-list"></tbody>
+        </table>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center">
+        <p>© 2024 โรงแรม มรภ.ชัยภูมิ. All Rights Reserved.</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const roomAvailability = JSON.parse(localStorage.getItem('roomAvailability')) || {
+                Standard: 45,
+                Deluxe: 11,
+                Suite: 5
+            };
+
+            // แสดงจำนวนห้องที่ว่างและสถานะ
+            document.getElementById('standard-available').innerText = roomAvailability.Standard;
+            document.getElementById('deluxe-available').innerText = roomAvailability.Deluxe;
+            document.getElementById('suite-available').innerText = roomAvailability.Suite;
+
+            // อัปเดตสถานะห้อง
+            updateRoomStatus('standard', roomAvailability.Standard);
+            updateRoomStatus('deluxe', roomAvailability.Deluxe);
+            updateRoomStatus('suite', roomAvailability.Suite);
+
+            // ฟังก์ชันอัปเดตสถานะห้อง
+            function updateRoomStatus(type, availableRooms) {
+                const statusElement = document.getElementById(`${type}-status`);
+                if (availableRooms > 0) {
+                    statusElement.innerText = "ห้องยังว่าง";
+                    statusElement.classList.remove('booked');
+                    statusElement.classList.add('available');
+                } else {
+                    statusElement.innerText = "ห้องเต็ม";
+                    statusElement.classList.remove('available');
+                    statusElement.classList.add('booked');
+                }
+            }
+
+            // แสดงรายการจอง
+            const bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+            const bookingList = document.getElementById('booking-list');
+            bookings.forEach(booking => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${booking.name}</td>
+                    <td>${booking.phone}</td>
+                    <td>${booking.roomType}</td>
+                    <td>${booking.checkin}</td>
+                    <td>${booking.checkout}</td>
+                `;
+                bookingList.appendChild(row);
+            });
+        });
+    </script>
+</body>
+</html>

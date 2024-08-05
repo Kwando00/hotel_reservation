@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>หน้าจองห้องพัก</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+            color: #FFA500;
+        }
+        .navbar {
+            background-color: #FFA500;
+        }
+        .navbar-brand, .navbar-nav .nav-link {
+            color: #ffffff !important;
+        }
+        footer {
+            background-color: #FFA500;
+            color: white;
+            padding: 20px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <a class="navbar-brand" href="#">โรงแรม มรภ.ชัยภูมิ</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="index.html">หน้าแรก</a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="reserve.html">จองห้องพัก</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="reservation.html">ตารางการจอง</a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="monthly_usage.html">บันทึกการเข้าใช้บริการรายเดือน</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Booking Form -->
+    <div class="container my-4">
+        <h2 class="text-center">กรอกข้อมูลการจอง</h2>
+        <form id="booking-form">
+            <div class="form-row">
+                <div class="col">
+                    <label for="name">ชื่อผู้จอง</label>
+                    <input type="text" class="form-control" id="name" required>
+                </div>
+                <div class="col">
+                    <label for="phone">เบอร์โทร</label>
+                    <input type="text" class="form-control" id="phone" required>
+                </div>
+            </div>
+            <div class="form-row my-3">
+                <div class="col">
+                    <label for="room-type">ประเภทห้องพัก</label>
+                    <select class="form-control" id="room-type" required>
+                        <option value="" disabled selected>เลือกประเภทห้องพัก</option>
+                        <option value="Standard">ห้องพัก Standard</option>
+                        <option value="Deluxe">ห้องพัก Deluxe</option>
+                        <option value="Suite">ห้องพัก Suite</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row my-3">
+                <div class="col">
+                    <label for="checkin">เช็คอิน</label>
+                    <input type="date" class="form-control" id="checkin" required>
+                </div>
+                <div class="col">
+                    <label for="checkout">เช็คเอาท์</label>
+                    <input type="date" class="form-control" id="checkout" required>
+                </div>
+            </div>
+            <button type="button" class="btn btn-primary btn-block" onclick="submitBooking()">จองห้องพัก</button>
+        </form>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center">
+        <p>© 2024 โรงแรม มรภ.ชัยภูมิ. All Rights Reserved.</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
+    <script>
+        // ฟังก์ชันอัปเดตจำนวนห้องที่ว่าง
+        function updateRoomAvailability(roomType, operation) {
+            let roomAvailability = JSON.parse(localStorage.getItem('roomAvailability')) || {
+                Standard: 45,
+                Deluxe: 11,
+                Suite: 5
+            };
+
+            if (operation === 'decrement') {
+                roomAvailability[roomType]--;
+            } else if (operation === 'increment') {
+                roomAvailability[roomType]++;
+            }
+
+            localStorage.setItem('roomAvailability', JSON.stringify(roomAvailability));
+        }
+
+        function submitBooking() {
+            const name = document.getElementById('name').value;
+            const phone = document.getElementById('phone').value;
+            const roomType = document.getElementById('room-type').value;
+            const checkin = document.getElementById('checkin').value;
+            const checkout = document.getElementById('checkout').value;
+
+            if (!name || !phone || !roomType || !checkin || !checkout) {
+                alert('กรุณากรอกข้อมูลให้ครบถ้วน!');
+                return;
+            }
+
+            if (new Date(checkin) >= new Date(checkout)) {
+                alert('วันที่เช็คเอาท์ต้องหลังจากวันที่เช็คอิน!');
+                return;
+            }
+
+            // ลดจำนวนห้องที่ว่าง
+            updateRoomAvailability(roomType, 'decrement');
+
+            const bookingData = { name, phone, roomType, checkin, checkout };
+            let bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+            bookings.push(bookingData);
+            localStorage.setItem('bookings', JSON.stringify(bookings));
+            alert('จองห้องพักสำเร็จ! ไปที่ตารางการจองเพื่อดูข้อมูล.');
+            window.location.href = 'reservation.html'; // นำทางไปยัง reservation.html
+        }
+    </script>
+</body>
+</html>
